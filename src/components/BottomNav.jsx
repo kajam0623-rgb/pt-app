@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 const tabs = [
   { to: '/', label: '홈', icon: '🏠' },
   { to: '/workout', label: '운동', icon: '💪' },
+  { to: '/diet', label: '식단', icon: '🍱' },
   { to: '/calendar', label: '달력', icon: '📅' },
   { to: '/progress', label: '그래프', icon: '📈' },
   { to: '/settings', label: '설정', icon: '⚙️' },

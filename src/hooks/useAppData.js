@@ -1,12 +1,13 @@
 import { useStorage } from './useStorage';
 import { DEFAULT_PROFILE, todayStr, formatDate, month1Workouts, dailyDietTasks, getDayOfWeekStr } from '../data/workoutData';
+import { DAILY_GOALS } from '../data/foodData';
 
 export function useAppData() {
   const [profile, setProfile] = useStorage('pt_profile', DEFAULT_PROFILE);
   const [records, setRecords] = useStorage('pt_records', {});
   const [streak, setStreak] = useStorage('pt_streak', { current: 0, longest: 0, lastDate: '' });
 
-  const getDayRecord = (dateStr) => records[dateStr] || { workout: {}, sets: {}, diet: {}, bodyweight: null };
+  const getDayRecord = (dateStr) => records[dateStr] || { workout: {}, sets: {}, diet: {}, bodyweight: null, foods: [] };
 
   const toggleWorkout = (dateStr, taskId) => {
     setRecords((prev) => {
@@ -30,6 +31,22 @@ export function useAppData() {
       const taskSets = day.sets[taskId] ? [...day.sets[taskId]] : [];
       taskSets[setIndex] = data;
       return { ...prev, [dateStr]: { ...day, sets: { ...day.sets, [taskId]: taskSets } } };
+    });
+  };
+
+  const addFood = (dateStr, foodItem) => {
+    setRecords((prev) => {
+      const day = prev[dateStr] || { workout: {}, sets: {}, diet: {}, bodyweight: null, foods: [] };
+      const foods = [...(day.foods || []), foodItem];
+      return { ...prev, [dateStr]: { ...day, foods } };
+    });
+  };
+
+  const removeFood = (dateStr, index) => {
+    setRecords((prev) => {
+      const day = prev[dateStr] || { workout: {}, sets: {}, diet: {}, bodyweight: null, foods: [] };
+      const foods = (day.foods || []).filter((_, i) => i !== index);
+      return { ...prev, [dateStr]: { ...day, foods } };
     });
   };
 
@@ -71,8 +88,10 @@ export function useAppData() {
       return Math.round((done / workouts.length) * 100);
     }
     if (type === 'diet') {
-      const done = dailyDietTasks.filter(d => dayRecord.diet?.[d.id]).length;
-      return Math.round((done / dailyDietTasks.length) * 100);
+      const foods = dayRecord.foods || [];
+      if (foods.length === 0) return 0;
+      const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
+      return Math.min(100, Math.round((totalCalories / DAILY_GOALS.calories) * 100));
     }
     return 0;
   };
@@ -114,6 +133,7 @@ export function useAppData() {
     getDayRecord,
     toggleWorkout, toggleDiet,
     saveSet, saveBodyweight,
+    addFood, removeFood,
     calcProgress,
     getWeightHistory, getWeeklyCompletion,
   };

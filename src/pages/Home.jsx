@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RingChart from '../components/RingChart';
-import { todayStr, getDayOfWeekStr, dailyDietTasks, month1Workouts, weeklySchedule } from '../data/workoutData';
+import { todayStr, getDayOfWeekStr, month1Workouts, weeklySchedule } from '../data/workoutData';
+import { getScoreGrade, DAILY_GOALS } from '../data/foodData';
 
 const KOREAN_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function Home({ appData }) {
-  const { streak, calcProgress, getDayRecord, toggleWorkout, toggleDiet, saveBodyweight, profile } = appData;
+  const { streak, calcProgress, getDayRecord, toggleWorkout, saveBodyweight, profile } = appData;
   const navigate = useNavigate();
-  const [quickPanel, setQuickPanel] = useState(null); // 'workout' | 'diet' | null
   const [bwInput, setBwInput] = useState('');
   const [bwSaved, setBwSaved] = useState(false);
 
@@ -19,6 +19,11 @@ export default function Home({ appData }) {
   const workoutProgress = calcProgress(todayStr, 'workout');
   const dietProgress = calcProgress(todayStr, 'diet');
   const workouts = month1Workouts[dayStr] || [];
+
+  const todayFoods = todayRecord.foods || [];
+  const totalCalories = todayFoods.reduce((s, f) => s + f.calories, 0);
+  const avgScore = todayFoods.length > 0 ? todayFoods.reduce((s, f) => s + f.score, 0) / todayFoods.length : 0;
+  const dietGrade = getScoreGrade(avgScore);
 
   const handleSaveBw = () => {
     const w = parseFloat(bwInput);
@@ -70,8 +75,16 @@ export default function Home({ appData }) {
         <p className="text-gray-400 text-xs mb-4">오늘의 달성률</p>
         <div className="flex justify-around">
           <RingChart percent={workoutProgress} color="#3B82F6" size={100} strokeWidth={10} label="운동" sublabel={`${workouts.filter(w => todayRecord.workout[w.id]).length}/${workouts.length}`} />
-          <RingChart percent={dietProgress} color="#F97316" size={100} strokeWidth={10} label="식단" sublabel={`${dailyDietTasks.filter(d => todayRecord.diet[d.id]).length}/${dailyDietTasks.length}`} />
+          <RingChart percent={dietProgress} color="#F97316" size={100} strokeWidth={10} label="칼로리" sublabel={`${totalCalories}kcal`} />
         </div>
+        {todayFoods.length > 0 && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <span className="text-xs px-3 py-1 rounded-full font-bold" style={{ color: dietGrade.color, backgroundColor: dietGrade.color + '20' }}>
+              식단 {dietGrade.label}등급
+            </span>
+            <span className="text-gray-500 text-xs">{dietGrade.msg}</span>
+          </div>
+        )}
       </div>
 
       {/* 체중 입력 */}
@@ -121,41 +134,16 @@ export default function Home({ appData }) {
           <p className="text-blue-200 text-xs mt-0.5">{dayStr} 루틴 보기</p>
         </button>
         <button
-          onClick={() => setQuickPanel(quickPanel === 'diet' ? null : 'diet')}
+          onClick={() => navigate('/diet')}
           className="bg-orange-600 rounded-2xl p-4 text-left active:scale-95 transition-transform"
         >
           <p className="text-2xl mb-2">🍱</p>
-          <p className="text-white font-bold text-sm">식단 체크</p>
-          <p className="text-orange-200 text-xs mt-0.5">{dietProgress}% 달성</p>
+          <p className="text-white font-bold text-sm">식단 기록</p>
+          <p className="text-orange-200 text-xs mt-0.5">
+            {todayFoods.length > 0 ? `${dietGrade.label}등급 · ${totalCalories}kcal` : '오늘 뭐 먹었어?'}
+          </p>
         </button>
       </div>
-
-      {/* 식단 퀵 패널 */}
-      {quickPanel === 'diet' && (
-        <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl border border-orange-500/20 overflow-hidden slide-up">
-          <div className="p-4 border-b border-white/5 flex justify-between items-center">
-            <p className="text-white font-bold text-sm">오늘 식단</p>
-            <button onClick={() => setQuickPanel(null)} className="text-gray-500 text-lg leading-none">✕</button>
-          </div>
-          <div className="p-3 space-y-2">
-            {dailyDietTasks.map(task => {
-              const done = todayRecord.diet[task.id];
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => toggleDiet(todayStr, task.id)}
-                  className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all active:scale-98 ${done ? 'bg-orange-500/20' : 'bg-[#2A2A2A]'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border ${done ? 'bg-orange-500 border-orange-500' : 'border-gray-600'}`}>
-                    {done && <span className="text-white text-xs">✓</span>}
-                  </div>
-                  <span className={`text-sm ${done ? 'text-orange-300 line-through opacity-70' : 'text-gray-200'}`}>{task.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

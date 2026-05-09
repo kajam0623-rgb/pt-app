@@ -3,6 +3,7 @@ import { useAppData } from './hooks/useAppData';
 import BottomNav from './components/BottomNav';
 import Home from './pages/Home';
 import Workout from './pages/Workout';
+import Diet from './pages/Diet';
 import Calendar from './pages/Calendar';
 import Progress from './pages/Progress';
 import Settings from './pages/Settings';
@@ -17,6 +18,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home appData={appData} />} />
             <Route path="/workout" element={<Workout appData={appData} />} />
+            <Route path="/diet" element={<Diet appData={appData} />} />
             <Route path="/calendar" element={<Calendar appData={appData} />} />
             <Route path="/progress" element={<Progress appData={appData} />} />
             <Route path="/settings" element={<Settings appData={appData} />} />
