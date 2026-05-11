@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MStripe from '../components/MStripe';
 import { formatDate, getDayOfWeekStr, month1Workouts, dailyDietTasks } from '../data/workoutData';
 
 const todayStr = formatDate(new Date());
@@ -30,28 +31,33 @@ export default function Calendar({ appData }) {
   const workoutProgress = calcProgress(selectedDate, 'workout');
   const dietProgress = calcProgress(selectedDate, 'diet');
 
+  const hairline = '1px solid var(--hairline)';
+  const labelStyle = { color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 };
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F0F0F] pb-24">
-      <div className="px-5 pt-12 pb-4">
-        <p className="text-gray-500 text-sm">기록 보기</p>
-        <h1 className="text-2xl font-black text-white mt-1">실천 달력</h1>
+    <div className="flex flex-col min-h-screen pb-24" style={{ background: 'var(--canvas)' }}>
+      <div style={{ padding: '48px 20px 16px' }}>
+        <p style={labelStyle}>기록 보기</p>
+        <h1 style={{ color: '#fff', fontSize: '32px', fontWeight: 700, textTransform: 'uppercase', margin: '6px 0 0', lineHeight: 1.0 }}>실천 달력</h1>
       </div>
 
+      <div style={{ margin: '0 20px 16px' }}><MStripe /></div>
+
       {/* 달력 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
-        <div className="flex justify-between items-center mb-4">
-          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center text-gray-400 active:scale-90">◀</button>
-          <p className="text-white font-bold">{currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월</p>
-          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center text-gray-400 active:scale-90">▶</button>
+      <div style={{ margin: '0 20px 16px', border: hairline, padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <button onClick={prevMonth} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px' }}>◀</button>
+          <p style={{ color: '#fff', fontWeight: 700, fontSize: '13px', margin: 0 }}>{currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월</p>
+          <button onClick={nextMonth} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '13px' }}>▶</button>
         </div>
 
-        <div className="grid grid-cols-7 text-center text-xs font-semibold mb-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '8px' }}>
           {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
-            <div key={d} className={i === 0 ? 'text-red-400' : i === 6 ? 'text-blue-400' : 'text-gray-500'}>{d}</div>
+            <div key={d} style={{ fontSize: '10px', fontWeight: 700, color: i === 0 ? 'var(--m-red)' : i === 6 ? 'var(--m-blue)' : 'var(--muted)' }}>{d}</div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
           {getCalendarDays().map((date, idx) => {
             const ds = formatDate(date);
             const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
@@ -65,21 +71,27 @@ export default function Calendar({ appData }) {
               <button
                 key={idx}
                 onClick={() => setSelectedDate(ds)}
-                className={`min-h-[52px] rounded-xl flex flex-col items-center p-1 transition-all active:scale-95
-                  ${!isCurrentMonth ? 'opacity-25' : ''}
-                  ${isSelected ? 'ring-2 ring-blue-500 bg-blue-500/10' : 'hover:bg-white/5'}
-                `}
+                style={{
+                  minHeight: '52px', borderRadius: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4px',
+                  background: isSelected ? 'rgba(28,105,212,0.15)' : 'transparent',
+                  border: isSelected ? '1px solid var(--m-blue)' : '1px solid transparent',
+                  cursor: 'pointer',
+                  opacity: isCurrentMonth ? 1 : 0.25,
+                }}
               >
-                <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full
-                  ${isToday ? 'bg-blue-600 text-white' : 'text-gray-300'}
-                `}>{date.getDate()}</span>
+                <span style={{
+                  fontSize: '11px', fontWeight: 700, width: '22px', height: '22px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 0,
+                  background: isToday ? 'var(--m-blue)' : 'transparent',
+                  color: isToday ? '#fff' : isCurrentMonth ? 'var(--body)' : 'var(--muted)',
+                }}>{date.getDate()}</span>
                 {hasRecord && (
-                  <div className="w-full px-0.5 mt-auto space-y-0.5">
-                    <div className="w-full h-1 bg-[#2A2A2A] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${wp === 100 ? 'bg-blue-500' : 'bg-blue-400/60'}`} style={{ width: `${wp}%` }} />
+                  <div style={{ width: '100%', paddingLeft: '2px', paddingRight: '2px', marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ width: '100%', height: '2px', background: 'var(--surface-card)' }}>
+                      <div style={{ height: '100%', background: wp === 100 ? 'var(--m-blue)' : 'rgba(28,105,212,0.5)', width: `${wp}%` }} />
                     </div>
-                    <div className="w-full h-1 bg-[#2A2A2A] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${dp === 100 ? 'bg-orange-500' : 'bg-orange-400/60'}`} style={{ width: `${dp}%` }} />
+                    <div style={{ width: '100%', height: '2px', background: 'var(--surface-card)' }}>
+                      <div style={{ height: '100%', background: dp === 100 ? 'var(--m-red)' : 'rgba(226,39,24,0.4)', width: `${dp}%` }} />
                     </div>
                   </div>
                 )}
@@ -88,42 +100,53 @@ export default function Calendar({ appData }) {
           })}
         </div>
 
-        <div className="flex gap-4 justify-end mt-2 text-xs text-gray-600">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-full inline-block" /> 운동</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 bg-orange-500 rounded-full inline-block" /> 식단</span>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', marginTop: '8px' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: 'var(--muted)' }}>
+            <span style={{ width: '8px', height: '8px', background: 'var(--m-blue)', display: 'inline-block' }} /> 운동
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: 'var(--muted)' }}>
+            <span style={{ width: '8px', height: '8px', background: 'var(--m-red)', display: 'inline-block' }} /> 식단
+          </span>
         </div>
       </div>
 
       {/* 선택 날짜 상세 */}
       {selectedDate && (
-        <div className="mx-5 space-y-3">
-          <p className="text-gray-400 text-sm font-semibold">
+        <div style={{ margin: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>
             {selectedDate.split('-')[1]}월 {selectedDate.split('-')[2]}일 ({selectedDayStr}) — 운동 {workoutProgress}% · 식단 {dietProgress}%
           </p>
 
-          {/* 운동 체크 */}
           {selectedWorkouts.length > 0 && (
-            <div className="bg-[#1A1A1A] rounded-2xl border border-white/5">
-              <div className="px-4 py-3 border-b border-white/5">
-                <p className="text-white font-bold text-sm">💪 운동</p>
+            <div style={{ border: '1px solid var(--hairline)' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)' }}>
+                <p style={{ color: '#fff', fontWeight: 700, fontSize: '12px', margin: 0 }}>운동</p>
               </div>
-              <div className="p-3 space-y-2">
+              <div style={{ padding: '8px' }}>
                 {selectedWorkouts.map(task => {
                   const done = selectedRecord.workout[task.id];
                   return (
                     <button
                       key={task.id}
                       onClick={() => toggleWorkout(selectedDate, task.id)}
-                      className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all active:scale-98 ${done ? 'bg-blue-500/20' : 'bg-[#2A2A2A]'}`}
+                      style={{
+                        width: '100%', textAlign: 'left', padding: '12px', display: 'flex', alignItems: 'center', gap: '12px',
+                        background: done ? 'rgba(28,105,212,0.15)' : 'var(--surface-soft)',
+                        border: '1px solid var(--hairline)', borderRadius: 0, cursor: 'pointer', marginBottom: '4px',
+                      }}
                     >
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${done ? 'bg-blue-500 border-blue-500' : 'border-gray-600'}`}>
-                        {done && <span className="text-white text-xs">✓</span>}
+                      <div style={{
+                        width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 0,
+                        border: done ? 'none' : '2px solid var(--hairline)',
+                        background: done ? 'var(--m-blue)' : 'transparent',
+                      }}>
+                        {done && <span style={{ color: '#fff', fontSize: '10px', fontWeight: 700 }}>✓</span>}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold ${done ? 'text-blue-300 line-through opacity-70' : 'text-gray-200'}`}>
-                          {task.emoji} {task.name}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '12px', fontWeight: 700, margin: 0, color: done ? 'var(--m-blue)' : 'var(--body)', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.7 : 1 }}>
+                          {task.name}
                         </p>
-                        <p className="text-gray-500 text-xs">{task.sets > 0 ? `${task.sets}세트` : ''} {task.reps}</p>
+                        <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '2px 0 0' }}>{task.sets > 0 ? `${task.sets}세트` : ''} {task.reps}</p>
                       </div>
                     </button>
                   );
@@ -132,24 +155,31 @@ export default function Calendar({ appData }) {
             </div>
           )}
 
-          {/* 식단 체크 */}
-          <div className="bg-[#1A1A1A] rounded-2xl border border-white/5">
-            <div className="px-4 py-3 border-b border-white/5">
-              <p className="text-white font-bold text-sm">🍱 식단</p>
+          <div style={{ border: '1px solid var(--hairline)', marginBottom: '16px' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)' }}>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: '12px', margin: 0 }}>식단</p>
             </div>
-            <div className="p-3 space-y-2">
+            <div style={{ padding: '8px' }}>
               {dailyDietTasks.map(task => {
                 const done = selectedRecord.diet[task.id];
                 return (
                   <button
                     key={task.id}
                     onClick={() => toggleDiet(selectedDate, task.id)}
-                    className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all active:scale-98 ${done ? 'bg-orange-500/20' : 'bg-[#2A2A2A]'}`}
+                    style={{
+                      width: '100%', textAlign: 'left', padding: '12px', display: 'flex', alignItems: 'center', gap: '12px',
+                      background: done ? 'rgba(226,39,24,0.1)' : 'var(--surface-soft)',
+                      border: '1px solid var(--hairline)', borderRadius: 0, cursor: 'pointer', marginBottom: '4px',
+                    }}
                   >
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${done ? 'bg-orange-500 border-orange-500' : 'border-gray-600'}`}>
-                      {done && <span className="text-white text-xs">✓</span>}
+                    <div style={{
+                      width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 0,
+                      border: done ? 'none' : '2px solid var(--hairline)',
+                      background: done ? 'var(--m-red)' : 'transparent',
+                    }}>
+                      {done && <span style={{ color: '#fff', fontSize: '10px', fontWeight: 700 }}>✓</span>}
                     </div>
-                    <span className={`text-sm ${done ? 'text-orange-300 line-through opacity-70' : 'text-gray-200'}`}>{task.name}</span>
+                    <span style={{ fontSize: '12px', color: done ? 'var(--m-red)' : 'var(--body)', textDecoration: done ? 'line-through' : 'none', opacity: done ? 0.7 : 1 }}>{task.name}</span>
                   </button>
                 );
               })}

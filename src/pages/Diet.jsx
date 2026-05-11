@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MStripe from '../components/MStripe';
 import { foodCategories, DAILY_GOALS, getScoreGrade } from '../data/foodData';
 import { todayStr, formatDate } from '../data/workoutData';
 
@@ -7,6 +8,8 @@ function offsetDate(dateStr, delta) {
   d.setDate(d.getDate() + delta);
   return formatDate(d);
 }
+
+const GRADE_LETTER = (score) => score >= 4.5 ? 'S' : score >= 3.5 ? 'A' : score >= 2.5 ? 'B' : score >= 1.5 ? 'C' : 'D';
 
 export default function Diet({ appData }) {
   const { getDayRecord, addFood, removeFood, getRecentFoods } = appData;
@@ -19,8 +22,6 @@ export default function Diet({ appData }) {
 
   const totalCalories = foods.reduce((s, f) => s + f.calories, 0);
   const totalProtein = foods.reduce((s, f) => s + f.protein, 0);
-  const avgScore = foods.length > 0 ? foods.reduce((s, f) => s + f.score, 0) / foods.length : 0;
-  const grade = getScoreGrade(avgScore);
   const calPercent = Math.min(100, Math.round((totalCalories / DAILY_GOALS.calories) * 100));
   const proteinPercent = Math.min(100, Math.round((totalProtein / DAILY_GOALS.protein) * 100));
 
@@ -30,106 +31,67 @@ export default function Diet({ appData }) {
   const recentFoods = getRecentFoods();
   const currentCategory = foodCategories.find(c => c.id === activeCategory);
 
+  const hairline = '1px solid var(--hairline)';
+  const labelStyle = { color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 };
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F0F0F] pb-24">
+    <div className="flex flex-col min-h-screen pb-24" style={{ background: 'var(--canvas)' }}>
       {/* 헤더 */}
-      <div className="px-5 pt-12 pb-4">
-        <p className="text-gray-500 text-sm">식단 기록</p>
-        <div className="flex items-center justify-between mt-1">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1A1A1A] border border-white/5 text-gray-300 active:scale-90 transition-transform text-sm"
-          >◀</button>
-          <div className="text-center">
-            <h1 className="text-xl font-black text-white">{dateLabel}</h1>
-            <p className={`text-xs mt-0.5 font-semibold ${isToday ? 'text-orange-400' : 'text-gray-500'}`}>
-              {isToday ? '오늘' : viewDate}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate(1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1A1A1A] border border-white/5 text-gray-300 active:scale-90 transition-transform text-sm"
-          >▶</button>
+      <div style={{ padding: '48px 20px 16px' }}>
+        <p style={labelStyle}>식단 기록</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+          <button onClick={() => navigate(-1)} style={{ border: hairline, background: 'transparent', color: 'var(--body)', padding: '8px 12px', cursor: 'pointer', borderRadius: 0, fontSize: '13px' }}>◀</button>
+          <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>{dateLabel}</h1>
+          <button onClick={() => navigate(1)} style={{ border: hairline, background: 'transparent', color: 'var(--body)', padding: '8px 12px', cursor: 'pointer', borderRadius: 0, fontSize: '13px' }}>▶</button>
         </div>
         {!isToday && (
-          <button onClick={() => setViewDate(todayStr)} className="mt-2 w-full text-center text-xs text-orange-400 py-1">
+          <button onClick={() => setViewDate(todayStr)} style={{ marginTop: '8px', width: '100%', textAlign: 'center', fontSize: '10px', color: 'var(--m-blue)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
             오늘로 돌아가기
           </button>
         )}
       </div>
 
-      {/* 오늘의 요약 카드 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-gray-400 text-xs">오늘 식단 점수</p>
-          {foods.length > 0 ? (
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: grade.color, backgroundColor: grade.color + '20' }}>
-                {grade.label}등급
-              </span>
-              <p className="text-gray-400 text-xs">{grade.msg}</p>
+      {/* M 스트라이프 */}
+      <div style={{ margin: '0 20px 16px' }}><MStripe /></div>
+
+      {/* 영양 요약 스펙 셀 */}
+      <div style={{ margin: '0 20px 16px' }}>
+        <p style={{ ...labelStyle, marginBottom: '8px' }}>오늘 영양 현황</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--hairline)' }}>
+          <div style={{ background: 'var(--surface-soft)', padding: '14px' }}>
+            <p style={{ ...labelStyle, fontSize: '8px', marginBottom: '4px' }}>칼로리</p>
+            <p style={{ color: totalCalories > DAILY_GOALS.calories ? 'var(--m-red)' : '#fff', fontSize: '26px', fontWeight: 700, margin: '0 0 6px', lineHeight: 1 }}>
+              {totalCalories}<span style={{ fontSize: '10px', fontWeight: 300, color: 'var(--muted)' }}> / {DAILY_GOALS.calories}</span>
+            </p>
+            <div style={{ background: 'var(--surface-card)', height: '2px' }}>
+              <div style={{ background: `linear-gradient(to right, var(--m-blue-light), ${totalCalories > DAILY_GOALS.calories ? 'var(--m-red)' : 'var(--m-blue)'})`, height: '100%', width: `${calPercent}%` }} />
             </div>
-          ) : (
-            <p className="text-gray-600 text-xs">아직 기록 없음</p>
-          )}
-        </div>
-
-        {/* 칼로리 바 */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-gray-400 text-xs">칼로리</p>
-            <p className="text-xs font-bold">
-              <span className={totalCalories > DAILY_GOALS.calories ? 'text-red-400' : 'text-white'}>{totalCalories}</span>
-              <span className="text-gray-500"> / {DAILY_GOALS.calories} kcal</span>
+          </div>
+          <div style={{ background: 'var(--surface-soft)', padding: '14px' }}>
+            <p style={{ ...labelStyle, fontSize: '8px', marginBottom: '4px' }}>단백질</p>
+            <p style={{ color: '#fff', fontSize: '26px', fontWeight: 700, margin: '0 0 6px', lineHeight: 1 }}>
+              {totalProtein}<span style={{ fontSize: '10px', fontWeight: 300, color: 'var(--muted)' }}>g / {DAILY_GOALS.protein}g</span>
             </p>
+            <div style={{ background: 'var(--surface-card)', height: '2px' }}>
+              <div style={{ background: 'linear-gradient(to right, var(--m-blue-light), var(--m-blue))', height: '100%', width: `${proteinPercent}%` }} />
+            </div>
           </div>
-          <div className="w-full bg-[#2A2A2A] rounded-full h-2 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${totalCalories > DAILY_GOALS.calories ? 'bg-red-500' : 'bg-orange-500'}`}
-              style={{ width: `${calPercent}%` }}
-            />
-          </div>
-          <p className="text-right text-xs text-gray-600 mt-0.5">{calPercent}%</p>
-        </div>
-
-        {/* 단백질 바 */}
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-gray-400 text-xs">단백질</p>
-            <p className="text-xs font-bold">
-              <span className="text-white">{totalProtein}g</span>
-              <span className="text-gray-500"> / {DAILY_GOALS.protein}g</span>
-            </p>
-          </div>
-          <div className="w-full bg-[#2A2A2A] rounded-full h-2 overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-500"
-              style={{ width: `${proteinPercent}%` }}
-            />
-          </div>
-          <p className="text-right text-xs text-gray-600 mt-0.5">{proteinPercent}%</p>
         </div>
       </div>
 
-      {/* 오늘 먹은 음식 목록 */}
+      {/* 오늘 먹은 것 목록 */}
       {foods.length > 0 && (
-        <div className="mx-5 mb-4">
-          <p className="text-gray-400 text-xs font-semibold mb-2">오늘 먹은 것</p>
-          <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden">
+        <div style={{ margin: '0 20px 16px' }}>
+          <p style={{ ...labelStyle, marginBottom: '8px' }}>오늘 먹은 것</p>
+          <div style={{ border: hairline }}>
             {foods.map((food, idx) => (
-              <div key={`${food.id}-${idx}`} className="flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0">
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-semibold truncate">{food.name}</p>
-                  <p className="text-gray-500 text-xs">{food.calories}kcal · 단백질 {food.protein}g</p>
+              <div key={`${food.id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: idx < foods.length - 1 ? hairline : 'none' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: '#fff', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{food.name}</p>
+                  <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '2px 0 0' }}>{food.calories}kcal · 단백질 {food.protein}g</p>
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded-full font-bold flex-shrink-0"
-                  style={{ color: getScoreGrade(food.score).color, backgroundColor: getScoreGrade(food.score).color + '20' }}>
-                  {'★'.repeat(food.score)}{'☆'.repeat(5 - food.score)}
-                </span>
-                <button
-                  onClick={() => removeFood(viewDate, idx)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2A2A2A] text-gray-500 text-xs active:scale-90 transition-transform flex-shrink-0"
-                >✕</button>
+                <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: getScoreGrade(food.score).color, flexShrink: 0 }}>{GRADE_LETTER(food.score)}</span>
+                <button onClick={() => removeFood(viewDate, idx)} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-card)', border: hairline, color: 'var(--muted)', fontSize: '10px', cursor: 'pointer', borderRadius: 0, flexShrink: 0 }}>✕</button>
               </div>
             ))}
           </div>
@@ -138,17 +100,17 @@ export default function Diet({ appData }) {
 
       {/* 최근 먹은 것 */}
       {recentFoods.length > 0 && (
-        <div className="px-5 mb-4">
-          <p className="text-gray-400 text-xs font-semibold mb-2">최근 먹은 것</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+        <div style={{ margin: '0 20px 16px' }}>
+          <p style={{ ...labelStyle, marginBottom: '8px' }}>최근 먹은 것</p>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
             {recentFoods.map(food => (
               <button
                 key={food.id}
                 onClick={() => addFood(viewDate, food)}
-                className="flex-shrink-0 bg-[#1A1A1A] border border-white/10 rounded-2xl px-3 py-2 text-left active:bg-white/5 transition-colors"
+                style={{ flexShrink: 0, border: hairline, padding: '10px 14px', background: 'transparent', cursor: 'pointer', textAlign: 'left', borderRadius: 0 }}
               >
-                <p className="text-white text-xs font-semibold whitespace-nowrap">{food.name}</p>
-                <p className="text-gray-500 text-xs mt-0.5">{food.calories}kcal · {food.protein}g</p>
+                <p style={{ color: '#fff', fontSize: '11px', fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}>{food.name}</p>
+                <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '2px 0 0' }}>{food.calories}kcal · {food.protein}g</p>
               </button>
             ))}
           </div>
@@ -156,51 +118,50 @@ export default function Diet({ appData }) {
       )}
 
       {/* 카테고리 탭 */}
-      <div className="px-5 mb-3">
-        <p className="text-gray-400 text-xs font-semibold mb-2">음식 추가</p>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {foodCategories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                activeCategory === cat.id
-                  ? 'text-white border-transparent'
-                  : 'bg-[#1A1A1A] text-gray-400 border-white/10'
-              }`}
-              style={activeCategory === cat.id ? { backgroundColor: cat.color, borderColor: cat.color } : {}}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+      <div style={{ margin: '0 20px 12px', borderBottom: hairline, display: 'flex', gap: 0, overflowX: 'auto' }}>
+        {foodCategories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            style={{
+              flexShrink: 0, padding: '8px 14px', background: 'transparent', border: 'none',
+              borderBottom: activeCategory === cat.id ? '2px solid #fff' : '2px solid transparent',
+              color: activeCategory === cat.id ? '#fff' : 'var(--muted)',
+              fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
       </div>
 
       {/* 음식 목록 */}
       {currentCategory && (
-        <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden">
-          {currentCategory.items.map((item) => {
-            const itemGrade = getScoreGrade(item.score);
-            return (
-              <button
-                key={item.id}
-                onClick={() => addFood(viewDate, item)}
-                className="w-full flex items-center gap-3 px-4 py-3 border-b border-white/5 last:border-0 active:bg-white/5 transition-colors text-left"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-semibold truncate">{item.name}</p>
-                  <p className="text-gray-500 text-xs">{item.calories}kcal · 단백질 {item.protein}g</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-                    style={{ color: itemGrade.color, backgroundColor: itemGrade.color + '20' }}>
-                    {item.score >= 4.5 ? 'S' : item.score >= 3.5 ? 'A' : item.score >= 2.5 ? 'B' : item.score >= 1.5 ? 'C' : 'D'}
-                  </span>
-                  <span className="text-gray-600 text-lg">+</span>
-                </div>
-              </button>
-            );
-          })}
+        <div style={{ margin: '0 20px', border: hairline }}>
+          {currentCategory.items.map((item, idx) => (
+            <button
+              key={item.id}
+              onClick={() => addFood(viewDate, item)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '12px 16px',
+                borderBottom: idx < currentCategory.items.length - 1 ? hairline : 'none',
+                background: 'transparent', border: 'none',
+                borderBottom: idx < currentCategory.items.length - 1 ? hairline : 'none',
+                cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ color: '#fff', fontSize: '12px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '2px 0 0' }}>{item.calories}kcal · 단백질 {item.protein}g</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '1px', color: getScoreGrade(item.score).color }}>{GRADE_LETTER(item.score)}</span>
+                <span style={{ color: 'var(--muted)', fontSize: '18px', fontWeight: 300 }}>+</span>
+              </div>
+            </button>
+          ))}
         </div>
       )}
     </div>

@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import RingChart from '../components/RingChart';
+import MStripe from '../components/MStripe';
 import { todayStr, getDayOfWeekStr, month1Workouts, weeklySchedule } from '../data/workoutData';
 import { getScoreGrade, DAILY_GOALS } from '../data/foodData';
 
 const KOREAN_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function Home({ appData }) {
-  const { streak, calcProgress, getDayRecord, toggleWorkout, saveBodyweight, profile } = appData;
+  const { streak, calcProgress, getDayRecord, saveBodyweight, profile } = appData;
   const navigate = useNavigate();
   const [bwInput, setBwInput] = useState('');
   const [bwSaved, setBwSaved] = useState(false);
@@ -17,13 +17,9 @@ export default function Home({ appData }) {
   const dayStr = getDayOfWeekStr(todayStr);
   const todaySchedule = weeklySchedule.find(s => s.day === dayStr);
   const workoutProgress = calcProgress(todayStr, 'workout');
-  const dietProgress = calcProgress(todayStr, 'diet');
-  const workouts = month1Workouts[dayStr] || [];
 
   const todayFoods = todayRecord.foods || [];
   const totalCalories = todayFoods.reduce((s, f) => s + f.calories, 0);
-  const avgScore = todayFoods.length > 0 ? todayFoods.reduce((s, f) => s + f.score, 0) / todayFoods.length : 0;
-  const dietGrade = getScoreGrade(avgScore);
 
   const handleSaveBw = () => {
     const w = parseFloat(bwInput);
@@ -35,113 +31,155 @@ export default function Home({ appData }) {
     }
   };
 
-  const muscleProgress = Math.round(
-    ((profile.stats.muscle - 36.0) / (profile.goals.muscle - 36.0)) * 100
-  );
+  const muscleProgress = Math.max(0, Math.min(100,
+    Math.round(((profile.stats.muscle - 36.0) / (profile.goals.muscle - 36.0)) * 100)
+  ));
+
+  const labelStyle = {
+    color: 'var(--muted)',
+    fontSize: '9px',
+    fontWeight: 700,
+    letterSpacing: '1.5px',
+    textTransform: 'uppercase',
+    margin: '0 0 6px',
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F0F0F] pb-24">
+    <div className="flex flex-col min-h-screen pb-24" style={{ background: 'var(--canvas)' }}>
       {/* 헤더 */}
       <div className="px-5 pt-12 pb-4">
-        <p className="text-gray-500 text-sm">
+        <p style={{ color: 'var(--muted)', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 6px' }}>
           {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일 ({KOREAN_DAYS[today.getDay()]}요일)
         </p>
-        <h1 className="text-2xl font-black text-white mt-1">오늘도 성장하는 날 💪</h1>
+        <h1 style={{ color: '#fff', fontSize: '36px', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1.0, margin: 0 }}>
+          오늘도<br />성장하는 날
+        </h1>
       </div>
 
-      {/* 스트릭 배너 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 flex items-center justify-between border border-white/5">
-        <div>
-          <p className="text-gray-400 text-xs mb-1">연속 출석</p>
-          <p className="text-3xl font-black text-white">
-            🔥 {streak.current}<span className="text-lg font-semibold text-gray-400">일</span>
+      {/* M 스트라이프 */}
+      <div className="mx-5 mb-4">
+        <MStripe />
+      </div>
+
+      {/* 스트릭 + 루틴 스펙 셀 */}
+      <div className="mx-5 mb-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'var(--hairline)' }}>
+        <div style={{ background: 'var(--surface-soft)', padding: '16px' }}>
+          <p style={labelStyle}>연속 출석</p>
+          <p style={{ color: '#fff', fontSize: '32px', fontWeight: 700, margin: 0, lineHeight: 1 }}>
+            {streak.current}<span style={{ fontSize: '14px', fontWeight: 300, color: 'var(--body)' }}>일</span>
           </p>
-          <p className="text-xs text-gray-500 mt-1">최고 기록: {streak.longest}일</p>
+          <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '4px 0 0' }}>최고 기록: {streak.longest}일</p>
         </div>
-        <div className="text-right">
-          <p className="text-gray-400 text-xs mb-1">오늘 루틴</p>
-          <p className={`text-sm font-bold ${
-            todaySchedule?.type === 'free' ? 'text-yellow-400'
-            : todaySchedule?.type === 'workout' ? 'text-blue-400'
-            : 'text-gray-400'
-          }`}>
+        <div style={{ background: 'var(--surface-soft)', padding: '16px' }}>
+          <p style={labelStyle}>오늘 루틴</p>
+          <p style={{ color: '#fff', fontSize: '14px', fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
             {todaySchedule?.workout || '-'}
           </p>
+          <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '4px 0 0' }}>{dayStr}</p>
         </div>
       </div>
 
-      {/* 진행률 링 차트 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-5 border border-white/5">
-        <p className="text-gray-400 text-xs mb-4">오늘의 달성률</p>
-        <div className="flex justify-around">
-          <RingChart percent={workoutProgress} color="#3B82F6" size={100} strokeWidth={10} label="운동" sublabel={`${workouts.filter(w => todayRecord.workout[w.id]).length}/${workouts.length}`} />
-          <RingChart percent={dietProgress} color="#F97316" size={100} strokeWidth={10} label="칼로리" sublabel={`${totalCalories}kcal`} />
-        </div>
-        {todayFoods.length > 0 && (
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <span className="text-xs px-3 py-1 rounded-full font-bold" style={{ color: dietGrade.color, backgroundColor: dietGrade.color + '20' }}>
-              식단 {dietGrade.label}등급
-            </span>
-            <span className="text-gray-500 text-xs">{dietGrade.msg}</span>
+      {/* 달성률 스펙 셀 3개 */}
+      <div className="mx-5 mb-4">
+        <p style={labelStyle}>오늘의 달성률</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--hairline)' }}>
+          <div style={{ background: 'var(--surface-soft)', padding: '14px 12px' }}>
+            <p style={{ ...labelStyle, margin: '0 0 4px' }}>운동</p>
+            <p style={{ color: '#fff', fontSize: '28px', fontWeight: 700, margin: 0, lineHeight: 1 }}>
+              {workoutProgress}<span style={{ fontSize: '11px', fontWeight: 300, color: 'var(--body)' }}>%</span>
+            </p>
           </div>
-        )}
+          <div style={{ background: 'var(--surface-soft)', padding: '14px 12px' }}>
+            <p style={{ ...labelStyle, margin: '0 0 4px' }}>칼로리</p>
+            <p style={{ color: '#fff', fontSize: '20px', fontWeight: 700, margin: 0, lineHeight: 1 }}>
+              {totalCalories}<span style={{ fontSize: '10px', fontWeight: 300, color: 'var(--body)' }}>kcal</span>
+            </p>
+          </div>
+          <div style={{ background: 'var(--surface-soft)', padding: '14px 12px' }}>
+            <p style={{ ...labelStyle, margin: '0 0 4px' }}>체중</p>
+            <p style={{ color: '#fff', fontSize: '28px', fontWeight: 700, margin: 0, lineHeight: 1 }}>
+              {todayRecord.bodyweight ?? profile.stats.weight}
+              <span style={{ fontSize: '11px', fontWeight: 300, color: 'var(--body)' }}>kg</span>
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* 체중 입력 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
-        <p className="text-gray-400 text-xs mb-3">오늘 체중 기록</p>
-        <div className="flex gap-2">
+      <div className="mx-5 mb-4" style={{ border: '1px solid var(--hairline)' }}>
+        <div style={{ padding: '12px 16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             type="number"
             step="0.1"
-            placeholder={todayRecord.bodyweight ? `${todayRecord.bodyweight}kg` : "kg 입력"}
+            placeholder={todayRecord.bodyweight ? `${todayRecord.bodyweight}kg` : 'kg 입력'}
             value={bwInput}
             onChange={e => setBwInput(e.target.value)}
-            className="flex-1 bg-[#2A2A2A] text-white rounded-xl px-4 py-3 text-sm border border-white/10 focus:outline-none focus:border-blue-500"
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--body)',
+              fontSize: '13px',
+              fontWeight: 300,
+              outline: 'none',
+              fontFamily: 'inherit',
+            }}
           />
           <button
             onClick={handleSaveBw}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 ${bwSaved ? 'bg-green-500 text-white' : 'bg-blue-600 text-white'}`}
+            style={{
+              border: `1px solid ${bwSaved ? 'var(--m-blue)' : '#ffffff'}`,
+              background: bwSaved ? 'var(--m-blue)' : 'transparent',
+              color: '#ffffff',
+              padding: '8px 16px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              borderRadius: 0,
+            }}
           >
             {bwSaved ? '✓' : '저장'}
           </button>
         </div>
       </div>
 
-      {/* 목표 진행률 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-gray-400 text-xs">골격근량 목표 달성률</p>
-          <p className="text-xs text-blue-400 font-bold">{profile.stats.muscle}kg → {profile.goals.muscle}kg</p>
+      {/* 골격근량 진행률 */}
+      <div className="mx-5 mb-4" style={{ border: '1px solid var(--hairline)', padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+          <p style={labelStyle}>골격근량 목표</p>
+          <p style={{ color: '#fff', fontSize: '11px', fontWeight: 700, margin: 0 }}>
+            {profile.stats.muscle}kg → {profile.goals.muscle}kg
+          </p>
         </div>
-        <div className="w-full bg-[#2A2A2A] rounded-full h-2 overflow-hidden">
-          <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-700"
-            style={{ width: `${Math.max(0, Math.min(100, muscleProgress))}%` }}
-          />
+        <div style={{ background: 'var(--surface-card)', height: '2px', marginBottom: '6px' }}>
+          <div style={{
+            background: 'linear-gradient(to right, var(--m-blue-light), var(--m-blue))',
+            height: '100%',
+            width: `${muscleProgress}%`,
+          }} />
         </div>
-        <p className="text-xs text-gray-500 mt-1">현재 {profile.stats.muscle}kg (목표까지 {(profile.goals.muscle - profile.stats.muscle).toFixed(1)}kg 남음)</p>
+        <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: 0 }}>
+          목표까지 {(profile.goals.muscle - profile.stats.muscle).toFixed(1)}kg 남음
+        </p>
       </div>
 
       {/* 빠른 실행 버튼 */}
-      <div className="mx-5 mb-4 grid grid-cols-2 gap-3">
+      <div className="mx-5 mb-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
         <button
           onClick={() => navigate('/workout')}
-          className="bg-blue-600 rounded-2xl p-4 text-left active:scale-95 transition-transform"
+          style={{ background: 'var(--m-blue)', padding: '16px', textAlign: 'left', border: 'none', cursor: 'pointer', borderRadius: 0 }}
         >
-          <p className="text-2xl mb-2">💪</p>
-          <p className="text-white font-bold text-sm">운동 시작</p>
-          <p className="text-blue-200 text-xs mt-0.5">{dayStr} 루틴 보기</p>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 6px' }}>운동 시작</p>
+          <p style={{ color: '#fff', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>{dayStr} 루틴 →</p>
         </button>
         <button
           onClick={() => navigate('/diet')}
-          className="bg-orange-600 rounded-2xl p-4 text-left active:scale-95 transition-transform"
+          style={{ border: '1px solid var(--hairline)', background: 'transparent', padding: '16px', textAlign: 'left', cursor: 'pointer', borderRadius: 0 }}
         >
-          <p className="text-2xl mb-2">🍱</p>
-          <p className="text-white font-bold text-sm">식단 기록</p>
-          <p className="text-orange-200 text-xs mt-0.5">
-            {todayFoods.length > 0 ? `${dietGrade.label}등급 · ${totalCalories}kcal` : '오늘 뭐 먹었어?'}
-          </p>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 6px' }}>식단 기록</p>
+          <p style={{ color: '#fff', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>오늘 식단 →</p>
         </button>
       </div>
     </div>

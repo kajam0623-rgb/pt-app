@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MStripe from '../components/MStripe';
 import { todayStr, getDayOfWeekStr, month1Workouts, weeklySchedule, formatDate } from '../data/workoutData';
 
 const DAY_ORDER = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -9,8 +10,7 @@ function offsetDate(dateStr, delta) {
   return formatDate(d);
 }
 
-// 유산소 카드
-function CardioCard({ ex, done, onToggle, viewDate, savedMin, onSaveMin }) {
+function CardioCard({ ex, done, onToggle, savedMin, onSaveMin }) {
   const [minInput, setMinInput] = useState('');
   const [saved, setSaved] = useState(false);
 
@@ -24,72 +24,68 @@ function CardioCard({ ex, done, onToggle, viewDate, savedMin, onSaveMin }) {
     }
   };
 
+  const hairline = '1px solid var(--hairline)';
+
   return (
-    <div className={`bg-[#1A1A1A] rounded-2xl border transition-all ${done ? 'border-green-500/30' : 'border-white/5'}`}>
-      <div className="p-4 flex items-center gap-3">
+    <div style={{ border: hairline, borderRadius: 0 }}>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={onToggle}
-          className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all active:scale-90
-            ${done ? 'bg-green-500 border-green-500' : 'border-gray-600'}`}
+          style={{
+            width: '20px', height: '20px', flexShrink: 0, borderRadius: 0,
+            border: done ? 'none' : '2px solid var(--hairline)',
+            background: done ? 'var(--m-blue)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+          }}
         >
-          {done && <span className="text-white text-xs">✓</span>}
+          {done && <span style={{ color: '#fff', fontSize: '10px', fontWeight: 700 }}>✓</span>}
         </button>
-        <span className="text-lg flex-shrink-0">{ex.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className={`font-bold text-sm ${done ? 'text-gray-500 line-through' : 'text-white'}`}>{ex.name}</p>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-semibold">유산소</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <p style={{ fontWeight: 700, fontSize: '13px', color: done ? 'var(--muted)' : '#fff', margin: 0, textDecoration: done ? 'line-through' : 'none' }}>{ex.name}</p>
+            <span style={{ fontSize: '9px', padding: '2px 8px', background: 'rgba(28,105,212,0.2)', color: 'var(--m-blue)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>유산소</span>
           </div>
-          <p className="text-gray-500 text-xs mt-0.5">{ex.reps} · 목표 {ex.cardioGoal}{ex.cardioUnit} · {ex.target}</p>
+          <p style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, margin: '2px 0 0' }}>{ex.reps} · 목표 {ex.cardioGoal}{ex.cardioUnit} · {ex.target}</p>
         </div>
       </div>
 
-      {/* 유산소 상세 */}
-      <div className="px-4 pb-4">
-        <div className="bg-[#242424] rounded-xl p-3 mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-green-400 text-xs font-bold">📋 방법</p>
+      <div style={{ padding: '0 16px 16px', borderTop: hairline }}>
+        <div style={{ background: 'var(--surface-soft)', padding: '12px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <p style={{ color: 'var(--m-blue)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 }}>방법</p>
             <a
               href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' 자세 운동')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600/20 text-red-400 text-xs font-bold active:scale-95 transition-transform"
-            >
-              ▶ YouTube
-            </a>
+              target="_blank" rel="noopener noreferrer"
+              style={{ background: 'var(--m-red)', padding: '4px 10px', color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'none' }}
+            >▶ YOUTUBE</a>
           </div>
           {ex.how.split('\n').map((line, i) => (
-            <p key={i} className="text-gray-300 text-xs leading-relaxed">{line}</p>
+            <p key={i} style={{ color: 'var(--body)', fontSize: '11px', fontWeight: 300, lineHeight: 1.6, margin: 0 }}>{line}</p>
           ))}
         </div>
-        <div className="bg-[#242424] rounded-xl p-3 mb-3">
-          <p className="text-yellow-400 text-xs font-bold mb-1">✨ 포인트</p>
-          <p className="text-gray-300 text-xs leading-relaxed">{ex.point}</p>
+        <div style={{ background: 'var(--surface-soft)', padding: '12px', marginBottom: '12px' }}>
+          <p style={{ color: '#f4b400', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 4px' }}>포인트</p>
+          <p style={{ color: 'var(--body)', fontSize: '11px', fontWeight: 300, lineHeight: 1.6, margin: 0 }}>{ex.point}</p>
         </div>
 
-        {/* 시간 기록 */}
-        <p className="text-gray-400 text-xs font-semibold mb-2">오늘 실제 시간 기록</p>
-        <div className="flex items-center gap-2">
+        <p style={{ color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 8px' }}>실제 시간 기록</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <input
-            type="number"
-            inputMode="numeric"
+            type="number" inputMode="numeric"
             placeholder={savedMin ? `${savedMin}` : `목표 ${ex.cardioGoal}분`}
             value={minInput}
             onChange={e => setMinInput(e.target.value)}
-            className="flex-1 bg-[#2A2A2A] text-white text-sm text-center rounded-lg px-3 py-2 border border-white/10 focus:outline-none focus:border-green-500"
+            style={{ flex: 1, background: 'var(--surface-soft)', color: '#fff', fontSize: '13px', textAlign: 'center', border: '1px solid var(--hairline)', padding: '8px', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
           />
-          <span className="text-gray-500 text-xs w-4">분</span>
+          <span style={{ color: 'var(--muted)', fontSize: '10px', width: '16px' }}>분</span>
           <button
             onClick={handleSave}
-            className={`px-4 py-2 text-xs rounded-lg font-bold active:scale-95 transition-colors
-              ${saved ? 'bg-green-500 text-white' : 'bg-green-600 text-white'}`}
-          >
-            {saved ? '✓' : '저장'}
-          </button>
+            style={{ padding: '8px 16px', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', background: saved ? 'var(--m-blue)' : 'var(--surface-card)', color: '#fff', border: '1px solid var(--hairline)', cursor: 'pointer', borderRadius: 0 }}
+          >{saved ? '✓' : '저장'}</button>
         </div>
         {savedMin && (
-          <p className="text-green-400 text-xs mt-1.5">
-            {savedMin >= ex.cardioGoal ? `✓ 목표 달성! (${savedMin}분)` : `${savedMin}분 완료 (목표까지 ${ex.cardioGoal - savedMin}분)`}
+          <p style={{ color: 'var(--m-blue)', fontSize: '10px', fontWeight: 300, margin: '6px 0 0' }}>
+            {savedMin >= ex.cardioGoal ? `✓ 목표 달성 (${savedMin}분)` : `${savedMin}분 완료 · 목표까지 ${ex.cardioGoal - savedMin}분`}
           </p>
         )}
       </div>
@@ -97,7 +93,6 @@ function CardioCard({ ex, done, onToggle, viewDate, savedMin, onSaveMin }) {
   );
 }
 
-// 웨이트 카드
 function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [weightInputs, setWeightInputs] = useState({});
@@ -119,117 +114,105 @@ function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
   };
 
   const handleChange = (i, value) => {
-    const key = `${ex.id}-${i}`;
     if (i === 0) {
-      // Set 1 변경 시 나머지도 같은 값으로 채우기
       const filled = {};
       for (let j = 0; j < ex.sets; j++) filled[`${ex.id}-${j}`] = value;
       setWeightInputs(prev => ({ ...prev, ...filled }));
     } else {
-      setWeightInputs(prev => ({ ...prev, [key]: value }));
+      setWeightInputs(prev => ({ ...prev, [`${ex.id}-${i}`]: value }));
     }
   };
 
   const handleBlur = (setIdx) => {
     const val = parseFloat(weightInputs[`${ex.id}-${setIdx}`]);
-    if (!isNaN(val) && val > 0) {
-      onSaveSet(ex.id, setIdx, { weight: val, reps: 12 });
-    }
+    if (!isNaN(val) && val > 0) onSaveSet(ex.id, setIdx, { weight: val, reps: 12 });
   };
 
-  // 목표 무게 달성 여부
   const lastSaved = getSavedWeight(ex.sets - 1);
   const hitGoal = ex.goalWeight > 0 && lastSaved >= ex.goalWeight;
+  const hairline = '1px solid var(--hairline)';
 
   return (
-    <div className={`bg-[#1A1A1A] rounded-2xl border transition-all ${done ? 'border-blue-500/30' : 'border-white/5'}`}>
+    <div style={{ border: isExpanded ? '1px solid var(--m-blue)' : hairline, borderRadius: 0 }}>
       <button
         onClick={handleToggleExpand}
-        className="w-full p-4 flex items-center gap-3 text-left"
+        style={{ width: '100%', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
       >
         <button
           onClick={(e) => { e.stopPropagation(); onToggle(); }}
-          className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all active:scale-90
-            ${done ? 'bg-blue-500 border-blue-500' : 'border-gray-600'}`}
+          style={{
+            width: '20px', height: '20px', flexShrink: 0, borderRadius: 0,
+            border: done ? 'none' : '2px solid var(--hairline)',
+            background: done ? 'var(--m-blue)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+          }}
         >
-          {done && <span className="text-white text-xs">✓</span>}
+          {done && <span style={{ color: '#fff', fontSize: '10px', fontWeight: 700 }}>✓</span>}
         </button>
-        <span className="text-lg flex-shrink-0">{ex.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <p className={`font-bold text-sm truncate ${done ? 'text-gray-500 line-through' : 'text-white'}`}>{ex.name}</p>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="text-gray-500 text-xs">{ex.sets}세트 × {ex.reps}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: '13px', color: done ? 'var(--muted)' : '#fff', margin: 0, textDecoration: done ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.name}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300 }}>{ex.sets}세트 × {ex.reps}</span>
             {ex.goalWeight > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold
-                ${hitGoal ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>
+              <span style={{ fontSize: '9px', padding: '2px 8px', background: hitGoal ? 'rgba(15,163,54,0.2)' : 'rgba(28,105,212,0.2)', color: hitGoal ? '#0fa336' : 'var(--m-blue)', fontWeight: 700, letterSpacing: '1px' }}>
                 {hitGoal ? '✓ ' : ''}목표 {ex.goalWeight}kg
               </span>
             )}
           </div>
         </div>
-        <span className="text-gray-600 text-xs flex-shrink-0">{isExpanded ? '▲' : '▼'}</span>
+        <span style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 700, flexShrink: 0 }}>{isExpanded ? '▲' : '▼'}</span>
       </button>
 
       {isExpanded && (
-        <div className="px-4 pb-4 slide-up">
-          {/* 기구 사용법 */}
-          <div className="bg-[#242424] rounded-xl p-3 mb-2">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-blue-400 text-xs font-bold">📋 기구 사용법</p>
+        <div style={{ padding: '0 16px 16px', borderTop: hairline }} className="slide-up">
+          <div style={{ background: 'var(--surface-soft)', padding: '12px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <p style={{ color: 'var(--m-blue)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 }}>기구 사용법</p>
               <a
                 href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' 자세 운동')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600/20 text-red-400 text-xs font-bold active:scale-95 transition-transform"
-              >
-                ▶ YouTube
-              </a>
+                target="_blank" rel="noopener noreferrer"
+                style={{ background: 'var(--m-red)', padding: '4px 10px', color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'none' }}
+              >▶ YOUTUBE</a>
             </div>
             {ex.how.split('\n').map((line, i) => (
-              <p key={i} className="text-gray-300 text-xs leading-relaxed">{line}</p>
+              <p key={i} style={{ color: 'var(--body)', fontSize: '11px', fontWeight: 300, lineHeight: 1.6, margin: 0 }}>{line}</p>
             ))}
           </div>
-          <div className="bg-[#242424] rounded-xl p-3 mb-3">
-            <p className="text-yellow-400 text-xs font-bold mb-1">✨ 핵심 포인트</p>
-            <p className="text-gray-300 text-xs leading-relaxed">{ex.point}</p>
+          <div style={{ background: 'var(--surface-soft)', padding: '12px', marginBottom: '12px' }}>
+            <p style={{ color: '#f4b400', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 4px' }}>핵심 포인트</p>
+            <p style={{ color: 'var(--body)', fontSize: '11px', fontWeight: 300, lineHeight: 1.6, margin: 0 }}>{ex.point}</p>
           </div>
 
-          {/* 목표 무게 배너 */}
           {ex.goalWeight > 0 && (
-            <div className={`rounded-xl px-3 py-2 mb-3 flex items-center justify-between
-              ${hitGoal ? 'bg-green-500/10 border border-green-500/30' : 'bg-blue-500/10 border border-blue-500/20'}`}>
-              <span className={`text-xs font-semibold ${hitGoal ? 'text-green-400' : 'text-blue-400'}`}>
+            <div style={{ padding: '10px 12px', marginBottom: '12px', background: hitGoal ? 'rgba(15,163,54,0.1)' : 'rgba(28,105,212,0.1)', border: `1px solid ${hitGoal ? '#0fa336' : 'var(--m-blue)'}` }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: hitGoal ? '#0fa336' : 'var(--m-blue)' }}>
                 {hitGoal ? '🎉 이번 달 목표 달성!' : `🎯 이번 달 목표: ${ex.goalWeight}kg`}
               </span>
               {!hitGoal && lastSaved && (
-                <span className="text-xs text-gray-400">{lastSaved}kg → {ex.goalWeight}kg</span>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', marginLeft: '8px' }}>{lastSaved}kg → {ex.goalWeight}kg</span>
               )}
             </div>
           )}
 
-          {/* 세트별 무게 기록 */}
-          <p className="text-gray-400 text-xs font-semibold mb-2">오늘 무게 기록 (× 12회 · 입력 후 자동저장)</p>
-          <div className="space-y-2">
+          <p style={{ color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: '0 0 8px' }}>무게 기록 · 입력 후 자동저장</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {Array.from({ length: ex.sets }).map((_, i) => {
               const saved = getSavedWeight(i);
               const inputKey = `${ex.id}-${i}`;
               const metGoal = ex.goalWeight > 0 && saved >= ex.goalWeight;
               return (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-gray-500 text-xs w-12 flex-shrink-0">Set {i + 1}</span>
-                  <span className="text-gray-600 text-xs w-12 flex-shrink-0">× 12회</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', width: '40px', flexShrink: 0 }}>SET {i + 1}</span>
+                  <span style={{ color: 'var(--muted)', fontSize: '10px', fontWeight: 300, width: '40px', flexShrink: 0 }}>× 12회</span>
                   <input
-                    type="number"
-                    inputMode="decimal"
+                    type="number" inputMode="decimal"
                     placeholder={saved != null ? `${saved}` : 'kg'}
                     value={weightInputs[inputKey] ?? ''}
                     onChange={e => handleChange(i, e.target.value)}
                     onBlur={() => handleBlur(i)}
-                    className="flex-1 min-w-0 bg-[#2A2A2A] text-white text-sm text-center rounded-lg px-2 py-2 border border-white/10 focus:outline-none focus:border-blue-500"
+                    style={{ flex: 1, minWidth: 0, background: 'var(--surface-soft)', color: '#fff', fontSize: '13px', textAlign: 'center', border: `1px solid ${weightInputs[inputKey] ? 'var(--m-blue)' : 'var(--hairline)'}`, padding: '8px', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
                   />
-                  <span className={`text-xs w-4 flex-shrink-0 ${metGoal ? 'text-green-400' : 'text-gray-500'}`}>
-                    {metGoal ? '✓' : 'kg'}
-                  </span>
+                  <span style={{ fontSize: '10px', width: '16px', flexShrink: 0, color: metGoal ? '#0fa336' : 'var(--muted)' }}>{metGoal ? '✓' : 'kg'}</span>
                 </div>
               );
             })}
@@ -261,41 +244,36 @@ export default function Workout({ appData }) {
   };
 
   const getSavedCardioMin = (taskId) => viewRecord.sets?.[taskId]?.[0]?.reps;
-
-  const handleSaveCardioMin = (taskId, min) => {
-    saveSet(viewDate, taskId, 0, { weight: 0, reps: min });
-  };
-
+  const handleSaveCardioMin = (taskId, min) => saveSet(viewDate, taskId, 0, { weight: 0, reps: min });
   const dateLabel = isToday ? '오늘' : viewDate.slice(5).replace('-', '/');
+  const hairline = '1px solid var(--hairline)';
+  const labelStyle = { color: 'var(--muted)', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', margin: 0 };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0F0F0F] pb-24">
+    <div className="flex flex-col min-h-screen pb-24" style={{ background: 'var(--canvas)' }}>
       {/* 헤더 */}
-      <div className="px-5 pt-12 pb-4">
-        <p className="text-gray-500 text-sm">운동 기록</p>
-        <div className="flex items-center justify-between mt-1">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1A1A1A] border border-white/5 text-gray-300 active:scale-90 transition-transform text-sm"
-          >◀</button>
-          <div className="text-center">
-            <h1 className="text-xl font-black text-white">{dayStr}</h1>
-            <p className={`text-xs mt-0.5 font-semibold ${isToday ? 'text-blue-400' : 'text-gray-500'}`}>{dateLabel}</p>
+      <div style={{ padding: '48px 20px 16px' }}>
+        <p style={labelStyle}>운동 기록</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+          <button onClick={() => navigate(-1)} style={{ border: hairline, background: 'transparent', color: 'var(--body)', padding: '8px 12px', cursor: 'pointer', borderRadius: 0, fontSize: '13px' }}>◀</button>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>{dayStr}</h1>
+            <p style={{ color: isToday ? 'var(--m-blue)' : 'var(--muted)', fontSize: '10px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', margin: '4px 0 0' }}>{dateLabel}</p>
           </div>
-          <button
-            onClick={() => navigate(1)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#1A1A1A] border border-white/5 text-gray-300 active:scale-90 transition-transform text-sm"
-          >▶</button>
+          <button onClick={() => navigate(1)} style={{ border: hairline, background: 'transparent', color: 'var(--body)', padding: '8px 12px', cursor: 'pointer', borderRadius: 0, fontSize: '13px' }}>▶</button>
         </div>
         {!isToday && (
-          <button onClick={() => setViewDate(todayStr)} className="mt-2 w-full text-center text-xs text-blue-400 py-1">
+          <button onClick={() => setViewDate(todayStr)} style={{ marginTop: '8px', width: '100%', textAlign: 'center', fontSize: '10px', color: 'var(--m-blue)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
             오늘로 돌아가기
           </button>
         )}
       </div>
 
+      {/* M 스트라이프 */}
+      <div style={{ margin: '0 20px 16px' }}><MStripe /></div>
+
       {/* 요일 탭 */}
-      <div className="px-5 mb-4 flex gap-2 overflow-x-auto pb-1">
+      <div style={{ margin: '0 20px 16px', borderBottom: hairline, display: 'flex', gap: 0, overflowX: 'auto' }}>
         {weeklySchedule.map((s) => {
           const isSelected = s.day === dayStr;
           const hasCardio = (month1Workouts[s.day] || []).some(e => e.cardio);
@@ -303,8 +281,13 @@ export default function Workout({ appData }) {
             <button
               key={s.day}
               onClick={() => jumpToDay(s.day)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all
-                ${isSelected ? 'bg-blue-600 text-white border-blue-600' : 'bg-[#1A1A1A] text-blue-400 border-blue-500/30'}`}
+              style={{
+                flexShrink: 0, padding: '8px 12px', background: 'transparent', border: 'none',
+                borderBottom: isSelected ? '2px solid var(--m-blue)' : '2px solid transparent',
+                color: isSelected ? '#fff' : 'var(--muted)',
+                fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
             >
               {s.day.slice(0, 1)}요일 {hasCardio ? '🏃' : '💪'}
             </button>
@@ -312,32 +295,31 @@ export default function Workout({ appData }) {
         })}
       </div>
 
-      {/* 진행률 */}
-      <div className="mx-5 mb-4 bg-[#1A1A1A] rounded-2xl p-4 border border-white/5">
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-gray-400 text-xs">완료율</p>
-          <p className="text-blue-400 font-black text-lg">{progress}%</p>
+      {/* 완료율 */}
+      <div style={{ margin: '0 20px 16px', border: hairline, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+          <p style={labelStyle}>완료율</p>
+          <p style={{ color: '#fff', fontSize: '24px', fontWeight: 700, margin: 0 }}>
+            {progress}<span style={{ fontSize: '12px', fontWeight: 300, color: 'var(--body)' }}>%</span>
+          </p>
         </div>
-        <div className="w-full bg-[#2A2A2A] rounded-full h-2 overflow-hidden">
-          <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div style={{ background: 'var(--surface-card)', height: '2px' }}>
+          <div style={{ background: 'linear-gradient(to right, var(--m-blue-light), var(--m-blue))', height: '100%', width: `${progress}%`, transition: 'width 0.5s ease' }} />
         </div>
         {progress === 100 && (
-          <p className="text-center text-green-400 font-bold text-sm mt-3 pop-anim">🎉 오늘 운동 완료! 최고야!</p>
+          <p style={{ textAlign: 'center', color: '#0fa336', fontWeight: 700, fontSize: '12px', marginTop: '12px' }} className="pop-anim">🎉 오늘 운동 완료! 최고야!</p>
         )}
       </div>
 
       {/* 운동 목록 */}
-      <div className="mx-5 space-y-3">
+      <div style={{ margin: '0 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {workouts.map((ex) => {
           const done = viewRecord.workout[ex.id];
           if (ex.cardio) {
             return (
               <CardioCard
-                key={ex.id}
-                ex={ex}
-                done={done}
+                key={ex.id} ex={ex} done={done}
                 onToggle={() => appData.toggleWorkout(viewDate, ex.id)}
-                viewDate={viewDate}
                 savedMin={getSavedCardioMin(ex.id)}
                 onSaveMin={(min) => handleSaveCardioMin(ex.id, min)}
               />
@@ -345,9 +327,7 @@ export default function Workout({ appData }) {
           }
           return (
             <WeightCard
-              key={ex.id}
-              ex={ex}
-              done={done}
+              key={ex.id} ex={ex} done={done}
               onToggle={() => appData.toggleWorkout(viewDate, ex.id)}
               viewRecord={viewRecord}
               onSaveSet={(taskId, setIdx, data) => appData.saveSet(viewDate, taskId, setIdx, data)}

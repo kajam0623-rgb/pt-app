@@ -5,10 +5,22 @@
   box-sizing: border-box;
 }
 
+:root {
+  --canvas: #000000;
+  --surface-soft: #0d0d0d;
+  --surface-card: #1a1a1a;
+  --hairline: #3c3c3c;
+  --body: #bbbbbb;
+  --muted: #7e7e7e;
+  --m-blue: #1c69d4;
+  --m-blue-light: #0066b1;
+  --m-red: #e22718;
+}
+
 body {
   margin: 0;
-  background-color: #0F0F0F;
-  color: #F9FAFB;
+  background-color: var(--canvas);
+  color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overscroll-behavior: none;
 }
