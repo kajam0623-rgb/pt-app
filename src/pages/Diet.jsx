@@ -9,7 +9,7 @@ function offsetDate(dateStr, delta) {
 }
 
 export default function Diet({ appData }) {
-  const { getDayRecord, addFood, removeFood } = appData;
+  const { getDayRecord, addFood, removeFood, getRecentFoods } = appData;
   const [viewDate, setViewDate] = useState(todayStr);
   const [activeCategory, setActiveCategory] = useState('healthy');
 
@@ -27,6 +27,7 @@ export default function Diet({ appData }) {
   const navigate = (delta) => setViewDate(d => offsetDate(d, delta));
   const dateLabel = isToday ? '오늘' : viewDate.slice(5).replace('-', '/');
 
+  const recentFoods = getRecentFoods();
   const currentCategory = foodCategories.find(c => c.id === activeCategory);
 
   return (
@@ -130,6 +131,25 @@ export default function Diet({ appData }) {
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#2A2A2A] text-gray-500 text-xs active:scale-90 transition-transform flex-shrink-0"
                 >✕</button>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 최근 먹은 것 */}
+      {recentFoods.length > 0 && (
+        <div className="px-5 mb-4">
+          <p className="text-gray-400 text-xs font-semibold mb-2">최근 먹은 것</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {recentFoods.map(food => (
+              <button
+                key={food.id}
+                onClick={() => addFood(viewDate, food)}
+                className="flex-shrink-0 bg-[#1A1A1A] border border-white/10 rounded-2xl px-3 py-2 text-left active:bg-white/5 transition-colors"
+              >
+                <p className="text-white text-xs font-semibold whitespace-nowrap">{food.name}</p>
+                <p className="text-gray-500 text-xs mt-0.5">{food.calories}kcal · {food.protein}g</p>
+              </button>
             ))}
           </div>
         </div>

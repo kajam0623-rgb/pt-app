@@ -96,6 +96,24 @@ export function useAppData() {
     return 0;
   };
 
+  const getRecentFoods = (limitDays = 7) => {
+    const cutoff = new Date(Date.now() - limitDays * 86400000).toISOString().slice(0, 10);
+    const seen = new Set();
+    const result = [];
+    Object.entries(records)
+      .filter(([date]) => date >= cutoff)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .forEach(([, r]) => {
+        (r.foods || []).forEach(food => {
+          if (!seen.has(food.id)) {
+            seen.add(food.id);
+            result.push(food);
+          }
+        });
+      });
+    return result.slice(0, 8);
+  };
+
   const getWeightHistory = () => {
     return Object.entries(records)
       .filter(([, r]) => r.bodyweight)
@@ -135,6 +153,7 @@ export function useAppData() {
     saveSet, saveBodyweight,
     addFood, removeFood,
     calcProgress,
+    getRecentFoods,
     getWeightHistory, getWeeklyCompletion,
   };
 }

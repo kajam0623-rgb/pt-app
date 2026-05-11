@@ -47,7 +47,17 @@ function CardioCard({ ex, done, onToggle, viewDate, savedMin, onSaveMin }) {
       {/* 유산소 상세 */}
       <div className="px-4 pb-4">
         <div className="bg-[#242424] rounded-xl p-3 mb-3">
-          <p className="text-green-400 text-xs font-bold mb-2">📋 방법</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-green-400 text-xs font-bold">📋 방법</p>
+            <a
+              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' 자세 운동')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600/20 text-red-400 text-xs font-bold active:scale-95 transition-transform"
+            >
+              ▶ YouTube
+            </a>
+          </div>
           {ex.how.split('\n').map((line, i) => (
             <p key={i} className="text-gray-300 text-xs leading-relaxed">{line}</p>
           ))}
@@ -89,21 +99,41 @@ function CardioCard({ ex, done, onToggle, viewDate, savedMin, onSaveMin }) {
 
 // 웨이트 카드
 function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
-  const [expandedId, setExpandedId] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [weightInputs, setWeightInputs] = useState({});
-  const [savedKeys, setSavedKeys] = useState({});
-
-  const isExpanded = expandedId === ex.id;
 
   const getSavedWeight = (setIdx) => viewRecord.sets?.[ex.id]?.[setIdx]?.weight;
 
-  const handleSave = (setIdx) => {
+  const initInputs = () => {
+    const init = {};
+    for (let i = 0; i < ex.sets; i++) {
+      const saved = getSavedWeight(i);
+      if (saved != null) init[`${ex.id}-${i}`] = String(saved);
+    }
+    return init;
+  };
+
+  const handleToggleExpand = () => {
+    if (!isExpanded) setWeightInputs(initInputs());
+    setIsExpanded(prev => !prev);
+  };
+
+  const handleChange = (i, value) => {
+    const key = `${ex.id}-${i}`;
+    if (i === 0) {
+      // Set 1 변경 시 나머지도 같은 값으로 채우기
+      const filled = {};
+      for (let j = 0; j < ex.sets; j++) filled[`${ex.id}-${j}`] = value;
+      setWeightInputs(prev => ({ ...prev, ...filled }));
+    } else {
+      setWeightInputs(prev => ({ ...prev, [key]: value }));
+    }
+  };
+
+  const handleBlur = (setIdx) => {
     const val = parseFloat(weightInputs[`${ex.id}-${setIdx}`]);
     if (!isNaN(val) && val > 0) {
       onSaveSet(ex.id, setIdx, { weight: val, reps: 12 });
-      const key = `${ex.id}-${setIdx}`;
-      setSavedKeys(prev => ({ ...prev, [key]: true }));
-      setTimeout(() => setSavedKeys(prev => ({ ...prev, [key]: false })), 1500);
     }
   };
 
@@ -114,7 +144,7 @@ function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
   return (
     <div className={`bg-[#1A1A1A] rounded-2xl border transition-all ${done ? 'border-blue-500/30' : 'border-white/5'}`}>
       <button
-        onClick={() => setExpandedId(isExpanded ? null : ex.id)}
+        onClick={handleToggleExpand}
         className="w-full p-4 flex items-center gap-3 text-left"
       >
         <button
@@ -144,7 +174,17 @@ function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
         <div className="px-4 pb-4 slide-up">
           {/* 기구 사용법 */}
           <div className="bg-[#242424] rounded-xl p-3 mb-2">
-            <p className="text-blue-400 text-xs font-bold mb-2">📋 기구 사용법</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-blue-400 text-xs font-bold">📋 기구 사용법</p>
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + ' 자세 운동')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600/20 text-red-400 text-xs font-bold active:scale-95 transition-transform"
+              >
+                ▶ YouTube
+              </a>
+            </div>
             {ex.how.split('\n').map((line, i) => (
               <p key={i} className="text-gray-300 text-xs leading-relaxed">{line}</p>
             ))}
@@ -168,12 +208,11 @@ function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
           )}
 
           {/* 세트별 무게 기록 */}
-          <p className="text-gray-400 text-xs font-semibold mb-2">오늘 무게 기록 (× 12회 고정)</p>
+          <p className="text-gray-400 text-xs font-semibold mb-2">오늘 무게 기록 (× 12회 · 입력 후 자동저장)</p>
           <div className="space-y-2">
             {Array.from({ length: ex.sets }).map((_, i) => {
               const saved = getSavedWeight(i);
               const inputKey = `${ex.id}-${i}`;
-              const isSaved = savedKeys[inputKey];
               const metGoal = ex.goalWeight > 0 && saved >= ex.goalWeight;
               return (
                 <div key={i} className="flex items-center gap-2">
@@ -184,19 +223,13 @@ function WeightCard({ ex, done, onToggle, viewRecord, onSaveSet }) {
                     inputMode="decimal"
                     placeholder={saved != null ? `${saved}` : 'kg'}
                     value={weightInputs[inputKey] ?? ''}
-                    onChange={e => setWeightInputs(prev => ({ ...prev, [inputKey]: e.target.value }))}
+                    onChange={e => handleChange(i, e.target.value)}
+                    onBlur={() => handleBlur(i)}
                     className="flex-1 min-w-0 bg-[#2A2A2A] text-white text-sm text-center rounded-lg px-2 py-2 border border-white/10 focus:outline-none focus:border-blue-500"
                   />
                   <span className={`text-xs w-4 flex-shrink-0 ${metGoal ? 'text-green-400' : 'text-gray-500'}`}>
                     {metGoal ? '✓' : 'kg'}
                   </span>
-                  <button
-                    onClick={() => handleSave(i)}
-                    className={`px-3 py-2 text-xs rounded-lg font-bold active:scale-95 flex-shrink-0 transition-colors
-                      ${isSaved ? 'bg-green-500 text-white' : 'bg-blue-600 text-white'}`}
-                  >
-                    {isSaved ? '✓' : '저장'}
-                  </button>
                 </div>
               );
             })}
